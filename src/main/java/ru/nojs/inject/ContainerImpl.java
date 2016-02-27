@@ -15,11 +15,11 @@ import java.util.stream.Stream;
  * Created by Юыху on 13.02.2016.
  */
 public class ContainerImpl implements Container {
-    private Map<Class, Object> singeltonInstance = new HashMap<>();
+    private Map<Class, Object> singletonInstance = new HashMap<>();
     private Reflections reflection;
 
-    ContainerImpl(String classPath){
-        reflection = new Reflections();
+    public ContainerImpl(String classPath){
+        reflection = new Reflections(classPath);
     }
 
     public <T> T getInstance(Class<T> clazz){
@@ -42,8 +42,7 @@ public class ContainerImpl implements Container {
         return null;
     }
 
-    private <T> T createObject(Class<T> clazz){
-        try{
+    private <T> T createObject(Class<T> clazz) {
              Constructor<T>[] constructor = (Constructor<T>[]) clazz.getConstructors();
             switch (constructor.length){
                 case 0: throw new IllegalStateException("Can't create constructor");
@@ -52,12 +51,9 @@ public class ContainerImpl implements Container {
                         return Stream.of(constructor)
                                 .filter(c -> c.isAnnotationPresent(Inject.class))
                                 .findFirst().map(this::createObject)
-                                .orElseThrow(() -> new IllegalStateException("Can't get constructor"));
+                                .orElseThrow(() -> new IllegalArgumentException("Can't get constructor"));
                     }
             }
-        } catch (Exception e){
-            throw new IllegalStateException("Can't create instance", e);
-        }
     }
 
     private <T> T createObject (Constructor<T> constructor){
@@ -69,8 +65,8 @@ public class ContainerImpl implements Container {
                 List<Object> param = new ArrayList<>(params.length);
                 Stream.of(params)
                         .forEach(parameter -> {
-                            if (constructor.isAnnotationPresent(Named.class)){
-                                param.add(getInstance(constructor.getAnnotation(Named.class).value(), parameter.getType()));
+                            if (parameter.isAnnotationPresent(Named.class)){
+                                param.add(getInstance(parameter.getAnnotation(Named.class).value(), parameter.getType()));
                             } else {
                                 param.add(getInstance(parameter.getType()));
                             }
@@ -79,11 +75,11 @@ public class ContainerImpl implements Container {
                 return constructor.newInstance(param.toArray());
             }
         } catch (Exception e){
-            throw  new IllegalStateException("Can't create instance");
+            throw  new IllegalStateException("Can't create instance", e);
         }
     }
 
     private <T> T getSingelton(Class<T> clazz){
-        return (T)singeltonInstance.computeIfAbsent(clazz,(c) -> createObject(clazz));
+        return (T) singletonInstance.computeIfAbsent(clazz,(c) -> createObject(clazz));
     }
 }

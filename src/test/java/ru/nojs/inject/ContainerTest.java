@@ -3,7 +3,7 @@ package ru.nojs.inject;
 import org.junit.Assert;
 import org.junit.Test;
 
-import javax.inject.Named;
+import javax.inject.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.*;
@@ -105,7 +105,7 @@ public class ContainerTest {
     public void testAmbiguousInstanceInjection() {
         container.getInstance(NotQualified.class);
     }
-/*
+
     @Test(timeout = 1500) // Bonus level 3
     public void testCircularDependencyCircuitBreak() throws Exception {
         CompletableFuture<CircularDependencyA> cf =
@@ -117,7 +117,7 @@ public class ContainerTest {
                     return null;
                 }).get(1, TimeUnit.SECONDS);
     }
-    */
+
 
     @Test(timeout = 1500)
     public void testNotCircularDependencyEasy() throws Exception {

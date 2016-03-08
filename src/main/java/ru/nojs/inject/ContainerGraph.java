@@ -6,29 +6,29 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Created by Юыху on 05.03.2016.
+ * Created by Kharitonov Oleg on 05.03.2016.
  */
-public class ContainerGraph<V> {
-    private Map<V, List<V>> map = new HashMap<>();
+public class ContainerGraph {
+    private Map<Class, List<Class>> map = new HashMap<>();
 
-    public void add (V clazz){
+    public void add (Class clazz){
         if (map.containsKey(clazz)) return;
         map.put(clazz, new ArrayList<>());
     }
 
-    public void add (V clazzFrom, V clazzTo){
+    public void add (Class clazzFrom, Class clazzTo){
         this.add(clazzFrom);
         this.add(clazzTo);
         map.get(clazzFrom).add(clazzTo);
     }
 
-    public boolean isCircular(V clazzTo, V clazzFrom){
+    public boolean isClassReuse(Class clazzTo, Class clazzFrom){
         if (clazzTo.equals(clazzFrom)){
             return true;
         }
 
-        for (V v : map.get(clazzFrom)){
-            if (isCircular(clazzTo, v)){
+        for (Class v : map.get(clazzFrom)){
+            if (isClassReuse(clazzTo, v)){
                 return true;
             }
         }

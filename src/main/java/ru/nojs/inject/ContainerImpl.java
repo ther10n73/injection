@@ -12,15 +12,15 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 /**
- * Created by Юыху on 13.02.2016.
+ * Created by Kharitonov Oleg on 13.02.2016.
  */
 public class ContainerImpl implements Container {
     private Map<Class, Object> singletonInstance = new HashMap<>();
-    private Reflections reflection;
-    private ContainerGraph<Class> graph = new ContainerGraph<>();
+    private final Reflections reflection;
+    private ContainerGraph graph = new ContainerGraph();
 
-    public ContainerImpl(String classPath){
-        reflection = new Reflections(classPath);
+    public ContainerImpl(String classPackage){
+        reflection = new Reflections(classPackage);
     }
 
     public <T> T getInstance(Class<T> clazz){
@@ -44,11 +44,11 @@ public class ContainerImpl implements Container {
     }
 
     private <T> T createObject(Class<T> clazz) {
-             Constructor<T>[] constructor = (Constructor<T>[]) clazz.getConstructors();
-            switch (constructor.length){
-                case 0: throw new IllegalStateException("Class don't have any constructor");
-                case 1: return createObject(constructor[0]);
-                    default: {
+        Constructor<T>[] constructor = (Constructor<T>[]) clazz.getConstructors();
+        switch (constructor.length){
+            case 0: throw new IllegalStateException("Class don't have any constructor");
+            case 1: return createObject(constructor[0]);
+            default: {
                         return Stream.of(constructor)
                                 .filter(c -> c.isAnnotationPresent(Inject.class))
                                 .findFirst().map(this::createObject)
@@ -68,7 +68,7 @@ public class ContainerImpl implements Container {
                 Stream.of(params)
                         .forEach(parameter -> {
                             graph.add(parameter.getType());
-                            if (graph.isCircular(constructor.getDeclaringClass(), parameter.getType())){
+                            if (graph.isClassReuse(constructor.getDeclaringClass(), parameter.getType())){
                                 throw new IllegalArgumentException("This is circular dependency");
                             }  else {
                                 graph.add(constructor.getDeclaringClass(), parameter.getType());
